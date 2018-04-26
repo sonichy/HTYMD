@@ -20,15 +20,17 @@ public:
 private:
     Ui::MainWindow *ui;
     QLabel *LS1,*LS2,*LS3;
-    QString path;
+    QString path, sHTML;
     void open(QString filename);
     QString replace(QString s);
+    int codeCount;
 
 private slots:
     void on_action_new_triggered();
     void on_action_open_triggered();
     void on_action_save_triggered();
-    void on_action_saveas_triggered();
+    void on_action_saveAs_triggered();
+    void on_action_saveAsHTML_triggered();
     void on_action_changelog_triggered();
     void on_action_aboutQt_triggered();
     void on_action_about_triggered();

@@ -57,9 +57,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_action_new_triggered()
 {
-    path = "";
+    //path = "";
     ui->textEdit->setText("");
-    //ui->textBrowser->setText("");
     setWindowTitle("新建 - HTYMD");
     LS1->setText("新建文件");
 }
@@ -120,7 +119,7 @@ void MainWindow::open(QString filename)
 void MainWindow::on_action_save_triggered()
 {
     if (path == "") {
-        on_action_saveas_triggered();
+        on_action_saveAs_triggered();
     } else {
         QFile file(path);
         if (file.open(QFile::WriteOnly)) {
@@ -136,7 +135,7 @@ void MainWindow::on_action_save_triggered()
     }
 }
 
-void MainWindow::on_action_saveas_triggered()
+void MainWindow::on_action_saveAs_triggered()
 {
     if (path == "") {
         path = QFileDialog::getSaveFileName(this, "保存文本", "./未命名");
@@ -145,6 +144,28 @@ void MainWindow::on_action_saveas_triggered()
     }
     if (!path.isEmpty()) {
         on_action_save_triggered();
+    }
+}
+
+void MainWindow::on_action_saveAsHTML_triggered()
+{
+    QString pathHTML;
+    if (path == "") {
+        pathHTML = QFileDialog::getSaveFileName(this, "另保存为HTML", "./未命名.htm");
+    } else {
+        pathHTML = QFileInfo(path).filePath() + "/" + QFileInfo(path).baseName() + ".htm";
+        pathHTML = QFileDialog::getSaveFileName(this, "另保存为HTML", pathHTML);
+    }
+    if (!pathHTML.isEmpty()) {
+        QFile file(pathHTML);
+        if (file.open(QFile::WriteOnly)) {
+            QTextStream ts(&file);
+            //QString s = ui->textBrowser->toHtml();
+            ts << sHTML;
+            LS1->setText("另存为 " + pathHTML);
+        }else{
+            QMessageBox::warning(this,"错误", QString(" %1:\n%2").arg(path).arg(file.errorString()));
+        }
     }
 }
 
@@ -231,41 +252,67 @@ void MainWindow::dropEvent(QDropEvent *e) //释放对方时，执行的操作
 
 void MainWindow::textChange()
 {
+    LS1->setText("");
     QString s = ui->textEdit->toPlainText();
     QStringList SL = s.split("\n");
-    QString s1 = "";
+    QString s1 = "<html>\r\n<head>\r\n<style>\r\n"
+                 "a { text-decoration:none; }\r\n"
+                 "pre { background:#eeeeee; width:fit-content;}\r\n"
+                 "code { background:#eeeeee; }\r\n"
+                 "</style>\r\n</head>\r\n<body>\r\n";
+    codeCount = 0;
     for(int i=0; i<SL.size(); i++){
-        s1 += replace(SL.at(i));
+        if(SL.at(i)==""){
+            s1 += "<br>";
+        }else if(SL.at(i) == "```"){
+            codeCount++;
+            if (codeCount % 2 == 0) {
+                s1 += "</pre>\r\n";
+            } else {
+                s1 += "<pre>\r\n";
+            }
+            continue;
+        }
+        if (codeCount % 2 == 0) {
+            s1 += replace(SL.at(i));
+        }else{
+            QString sCode = SL.at(i) + "\r\n";
+            s1 += sCode.replace("<","&lt;").replace(">","&gt;");
+        }
     }
-    //qDebug() << s1;
+    s1 += "</body>\r\n</html>";
+    //qDebug() << s1;    
     ui->textBrowser->setHtml(s1);
+    //sHTML = ui->textBrowser->toHtml();
+    sHTML = s1;
 }
 
 QString MainWindow::replace(QString s)
 {
     QString s1;
+
     if(s.contains("# ")){
         int index = s.indexOf("#### ");
         if(index!=-1){
-            s1 = "<h4>" + s.right(s.length()-index-5) + "</h4>";
+            s1 = "<h4>" + s.right(s.length()-index-5) + "</h4>\r\n";
             qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("### ");
         if(index!=-1){
-            s1 = "<h3>" + s.right(s.length()-index-4) + "</h3>";
+            s1 = "<h3>" + s.right(s.length()-index-4) + "</h3>\r\n";
             qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("## ");
         if(index!=-1){
-            s1 = "<h2>" + s.right(s.length()-index-3) + "</h2>";
+            s1 = "<h2>" + s.right(s.length()-index-3) + "</h2>\r\n";
             qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("# ");
         if(index!=-1){
-            s1 = "<h1>" + s.right(s.length()-index-2) + "</h1>";
+            s1 = "<h1>" + s.right(s.length()-index-2) + "</h1>\r\n";
             qDebug() << index << s << "->" << s1;
             return s1;
         }
@@ -286,9 +333,9 @@ QString MainWindow::replace(QString s)
                 s.replace(m.capturedStart(0), m.capturedLength(0), QString("<img src='%1' alt='%2'>").arg(url).arg(alt));
             }
         }
-        if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
+        //if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
         qDebug() << s;
-        return s;
+        //return s;
     } else if(s.contains("[")) {
         qDebug() << s;
         QRegularExpression r("\\[([^[]*)\\]\\(([^(]*)\\)");
@@ -298,18 +345,37 @@ QString MainWindow::replace(QString s)
             QString text = m.captured(1);
             s.replace(m.capturedStart(0), m.capturedLength(0), QString("<a href='%1'>%2</a>").arg(url).arg(text));
         }
-        if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
+        //if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
         qDebug() << s;
-        return s;
+        //return s;
     }
 
     if(s.contains("* ")){
-        s1 = "<ul><li>" + s.right(s.length()-2) + "</li></ul>";
+        s = "<ul><li>" + s.right(s.length()-2) + "</li></ul>";
         qDebug() << s << "->" << s1;
-        return s1;
+        //return s1;
     }
 
+    if(s.contains("```")){
+        QStringList SL = s.split("```");
+        s = "";
+        for(int i=0; i<SL.size(); i++){
+            s += SL.at(i);
+            if(i<SL.size()-1){
+                if(i%2 == 0){
+                    s += "<code>";
+                }else{
+                    s += "</code>";
+                }
+            }
+        }
+    }
+
+    if(s.contains("://")) s = "<a href='" + s + "'>" + s + "</a>" ;
+
     if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
+
+    s += "\r\n";
     return s;
 }
 
