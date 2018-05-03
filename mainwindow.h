@@ -48,7 +48,8 @@ private slots:
     void cursorPositionChange();    
     void textChange();
     void anchorClick(const QUrl& url);
-
+    void scrollBarTEValueChanged(int v);
+    void scrollBarTBValueChanged(int v);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *e);

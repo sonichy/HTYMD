@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QMimeData>
 #include <QDesktopServices>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,7 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->textBrowser->zoomIn(4);
     connect(ui->action_quit, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChange()));
-    connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));
+    connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));    
+    connect(ui->textEdit->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTEValueChanged(int)));
+    connect(ui->textBrowser->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTBValueChanged(int)));
     connect(ui->textBrowser, SIGNAL(anchorClicked(const QUrl&)),this, SLOT(anchorClick(const QUrl&)));
 
     //状态栏分割
@@ -382,4 +385,18 @@ QString MainWindow::replace(QString s)
 void MainWindow::anchorClick(const QUrl& url)
 {
     QDesktopServices::openUrl(url);
+}
+
+void MainWindow::scrollBarTEValueChanged(int v)
+{
+    //qDebug() << v;
+    QScrollBar *scrollBarTB = ui->textBrowser->verticalScrollBar();
+    scrollBarTB->setValue(v);
+}
+
+void MainWindow::scrollBarTBValueChanged(int v)
+{
+    //qDebug() << v;
+    QScrollBar *scrollBarTE = ui->textEdit->verticalScrollBar();
+    scrollBarTE->setValue(v);
 }
