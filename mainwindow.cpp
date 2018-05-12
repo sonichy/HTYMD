@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChange()));
     connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));    
     connect(ui->textEdit->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTEValueChanged(int)));
-    connect(ui->textBrowser->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTBValueChanged(int)));
+    //connect(ui->textBrowser->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTBValueChanged(int)));
     connect(ui->textBrowser, SIGNAL(anchorClicked(const QUrl&)),this, SLOT(anchorClick(const QUrl&)));
 
     //状态栏分割
@@ -48,8 +48,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringList Largs = QApplication::arguments();
     qDebug() << Largs;
     if (Largs.length() > 1) {
-        path = Largs.at(1);
-        open(path);
+        QUrl url(Largs.at(1));
+        open(url.toLocalFile());
     }
 }
 
@@ -164,6 +164,7 @@ void MainWindow::on_action_saveAsHTML_triggered()
         if (file.open(QFile::WriteOnly)) {
             QTextStream ts(&file);
             //QString s = ui->textBrowser->toHtml();
+            //ts << s;
             ts << sHTML;
             LS1->setText("另存为 " + pathHTML);
         }else{
@@ -259,7 +260,9 @@ void MainWindow::textChange()
     QString s = ui->textEdit->toPlainText();
     QStringList SL = s.split("\n");
     QString s1 = "<html>\r\n<head>\r\n<style>\r\n"
-                 "a { text-decoration:none; }\r\n"
+                 "table{border-collapse:collapse;}\r\n"
+                 "td { border:1px solid black; padding:5px; }\r\n"
+                 "a { text-decoration:none; }\r\n"            
                  "pre { background:#eeeeee; width:fit-content;}\r\n"
                  "code { background:#eeeeee; }\r\n"
                  "</style>\r\n</head>\r\n<body>\r\n";

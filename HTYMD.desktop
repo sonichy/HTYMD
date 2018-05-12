@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=HTYMD
 Comment=
-Exec=/media/sonichy/job/HY/Linux/Qt/HTYMD/HTYMD
+Exec=/media/sonichy/job/HY/Linux/Qt/HTYMD/HTYMD %u
 Icon=/media/sonichy/job/HY/Linux/Qt/HTYMD/icon.svg
 Path=/media/sonichy/job/HY/Linux/Qt/HTYMD
 Terminal=false
