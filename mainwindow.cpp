@@ -22,10 +22,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->textBrowser->zoomIn(4);
     connect(ui->action_quit, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChange()));
-    connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));    
+    connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));
     connect(ui->textEdit->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTEValueChanged(int)));
     //connect(ui->textBrowser->verticalScrollBar(), SIGNAL(valueChanged(int)),this,SLOT(scrollBarTBValueChanged(int)));
-    connect(ui->textBrowser, SIGNAL(anchorClicked(const QUrl&)),this, SLOT(anchorClick(const QUrl&)));
+    connect(ui->textBrowser, SIGNAL(anchorClicked(const QUrl&)), this, SLOT(anchorClick(const QUrl&)));
 
     //状态栏分割
     LS1 = new QLabel("欢迎使用海天鹰 Markdown 编辑器！");
@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     LS2->setStyleSheet("padding:0px 3px;");
     LS3 = new QLabel("编码");
     LS3->setMinimumSize(20,20);
-    LS3->setStyleSheet("padding:0px 3px;");    
+    LS3->setStyleSheet("padding:0px 3px;");
     ui->statusBar->addWidget(LS1);
     ui->statusBar->addWidget(LS2);
     ui->statusBar->addWidget(LS3);
@@ -117,6 +117,7 @@ void MainWindow::open(QString filename)
     }else{
         QMessageBox::warning(this,"错误", QString(" %1:\n%2").arg(filename).arg(file->errorString()));
     }
+    setWindowModified(false);
 }
 
 void MainWindow::on_action_save_triggered()
@@ -129,7 +130,7 @@ void MainWindow::on_action_save_triggered()
             QTextStream ts(&file);
             QString s = ui->textEdit->toPlainText();
             ts << s;
-            setWindowTitle(QFileInfo(path).fileName()+"[*]");
+            //setWindowTitle(QFileInfo(path).fileName() + "[*]");
             setWindowModified(false);
             LS1->setText("保存 " + path);
         }else{
@@ -256,13 +257,14 @@ void MainWindow::dropEvent(QDropEvent *e) //释放对方时，执行的操作
 
 void MainWindow::textChange()
 {
+    setWindowModified(true);
     LS1->setText("");
     QString s = ui->textEdit->toPlainText();
     QStringList SL = s.split("\n");
     QString s1 = "<html>\r\n<head>\r\n<style>\r\n"
                  "table{border-collapse:collapse;}\r\n"
                  "td { border:1px solid black; padding:5px; }\r\n"
-                 "a { text-decoration:none; }\r\n"            
+                 "a { text-decoration:none; }\r\n"
                  "pre { background:#eeeeee; width:fit-content;}\r\n"
                  "code { background:#eeeeee; }\r\n"
                  "</style>\r\n</head>\r\n<body>\r\n";
@@ -287,7 +289,7 @@ void MainWindow::textChange()
         }
     }
     s1 += "</body>\r\n</html>";
-    //qDebug() << s1;    
+    //qDebug() << s1;
     ui->textBrowser->setHtml(s1);
     //sHTML = ui->textBrowser->toHtml();
     sHTML = s1;
