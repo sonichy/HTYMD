@@ -42,10 +42,11 @@ private slots:
     //void on_action_indent_triggered();
     //void on_action_font_triggered();
     void on_actionReload_triggered();
+    void on_actionViewHTML_triggered();
     //void find();
     //void replace();
     //void replaceAll();
-    void cursorPositionChange();    
+    void cursorPositionChange();
     void textChange();
     void anchorClick(const QUrl& url);
     void scrollBarTEValueChanged(int v);

@@ -18,8 +18,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    move((QApplication::desktop()->width() - width())/2, (QApplication::desktop()->height() - height())/2);
     ui->textBrowser->zoomIn(4);
+    ui->textBrowser_HTML->zoomIn(4);
+    ui->textBrowser_HTML->hide();
+    move((QApplication::desktop()->width() - width())/2, (QApplication::desktop()->height() - height())/2);
     connect(ui->action_quit, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChange()));
     connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChange()));
@@ -120,6 +122,15 @@ void MainWindow::open(QString filename)
     setWindowModified(false);
 }
 
+void MainWindow::on_actionViewHTML_triggered()
+{
+    if(ui->actionViewHTML->isChecked()){
+        ui->textBrowser_HTML->setVisible(true);
+    }else{
+        ui->textBrowser_HTML->setVisible(false);
+    }
+}
+
 void MainWindow::on_action_save_triggered()
 {
     if (path == "") {
@@ -205,7 +216,7 @@ void MainWindow::on_action_redo_triggered()
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QString s = "1.0\n2018-04\n制作分栏布局，从文本编辑器向 Markdown 迁移。";
+    QString s = "1.0\n2019-04\n增加HTML源码查看分栏。\n2018-04\n制作分栏布局，从文本编辑器向 Markdown 迁移。";
     QDialog *dialog = new QDialog;
     dialog->setWindowTitle("更新历史");
     dialog->setFixedSize(400,300);
@@ -270,7 +281,7 @@ void MainWindow::textChange()
                  "</style>\r\n</head>\r\n<body>\r\n";
     codeCount = 0;
     for(int i=0; i<SL.size(); i++){
-        if(SL.at(i)==""){
+        if(SL.at(i) == ""){
             s1 += "<br>";
         }else if(SL.at(i) == "```"){
             codeCount++;
@@ -289,46 +300,45 @@ void MainWindow::textChange()
         }
     }
     s1 += "</body>\r\n</html>";
-    //qDebug() << s1;
     ui->textBrowser->setHtml(s1);
-    //sHTML = ui->textBrowser->toHtml();
+    ui->textBrowser_HTML->setPlainText(s1);
     sHTML = s1;
 }
 
 QString MainWindow::replace(QString s)
 {
     QString s1;
-
+    //替换<h4-1>
     if(s.contains("# ")){
         int index = s.indexOf("#### ");
-        if(index!=-1){
+        if(index != -1){
             s1 = "<h4>" + s.right(s.length()-index-5) + "</h4>\r\n";
-            qDebug() << index << s << "->" << s1;
+            //qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("### ");
-        if(index!=-1){
+        if(index != -1){
             s1 = "<h3>" + s.right(s.length()-index-4) + "</h3>\r\n";
-            qDebug() << index << s << "->" << s1;
+            //qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("## ");
-        if(index!=-1){
+        if(index != -1){
             s1 = "<h2>" + s.right(s.length()-index-3) + "</h2>\r\n";
-            qDebug() << index << s << "->" << s1;
+            //qDebug() << index << s << "->" << s1;
             return s1;
         }
         index = s.indexOf("# ");
-        if(index!=-1){
+        if(index != -1){
             s1 = "<h1>" + s.right(s.length()-index-2) + "</h1>\r\n";
-            qDebug() << index << s << "->" << s1;
+            //qDebug() << index << s << "->" << s1;
             return s1;
         }
     }
 
 
     if(s.contains("![")){
-        qDebug() << s;
+        //qDebug() << s;
         // https://forum.qt.io/topic/89445/qregexp-replace
         QRegularExpression r("!\\[([^[]*)\\]\\(([^(]*)\\)");
         for (QRegularExpressionMatch m = r.match(s); m.hasMatch(); m = r.match(s)) {
@@ -381,7 +391,11 @@ QString MainWindow::replace(QString s)
 
     if(s.contains("://")) s = "<a href='" + s + "'>" + s + "</a>" ;
 
-    if (s.right(2)=="  ") s = s.left(s.length()-2) + "<br>";
+    if(s.contains("~~")){
+        s.replace("~~","<s>");
+    }
+
+    if (s.right(2) == "  ") s = s.left(s.length()-2) + "<br>";
 
     s += "\r\n";
     return s;
