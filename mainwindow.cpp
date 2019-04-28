@@ -216,7 +216,7 @@ void MainWindow::on_action_redo_triggered()
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QString s = "1.0\n2019-04\n增加HTML源码查看分栏。\n2018-04\n制作分栏布局，从文本编辑器向 Markdown 迁移。";
+    QString s = "1.0\n2019-04\n删除线符号~~替换为<s>\n增加HTML源码查看分栏。\n2018-04\n制作分栏布局，从文本编辑器向 Markdown 迁移。";
     QDialog *dialog = new QDialog;
     dialog->setWindowTitle("更新历史");
     dialog->setFixedSize(400,300);
@@ -391,8 +391,10 @@ QString MainWindow::replace(QString s)
 
     if(s.contains("://")) s = "<a href='" + s + "'>" + s + "</a>" ;
 
+    //删除线
     if(s.contains("~~")){
-        s.replace("~~","<s>");
+        //s.replace("~~","<s>");
+        s.replace(QRegularExpression("~~(.*?)~~"), "<s>\\1</s>");
     }
 
     if (s.right(2) == "  ") s = s.left(s.length()-2) + "<br>";
