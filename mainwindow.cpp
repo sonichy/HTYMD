@@ -394,6 +394,8 @@ QString MainWindow::replace(QString s)
     //删除线
     if(s.contains("~~")){
         //s.replace("~~","<s>");
+        //JonB https://forum.qt.io/topic/102065/qstring-replace-first-and-second-appear-string
+        // \1 is the string captured between ( and ), and in C++ you have to escape the backslash, hence \\1.
         s.replace(QRegularExpression("~~(.*?)~~"), "<s>\\1</s>");
     }
 
